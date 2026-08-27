@@ -2,18 +2,20 @@
 
 import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
+import withAuth from "@/components/withAuth";
 import Swal from "sweetalert2";
 
 const API_URL = "https://api.itdev.cmtc.ac.th/users";
 
-export default function FormEdit() {
+function FormEdit() {
   const params = useParams();
   const router = useRouter();
-  const id = params.id;
+  const id = params?.id;
 
   const [isLoading, setIsLoading] = useState(true);
   const [isError, setIsError] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [isAuth, setIsAuth] = useState(false);
   const [form, setForm] = useState({
     txt_firstname: "",
     txt_lastname: "",
@@ -21,15 +23,46 @@ export default function FormEdit() {
     txt_password: "",
   });
 
+  // 1. ตรวจสอบสิทธิ์การเข้าถึงและโหลดข้อมูลผู้ใช้
   useEffect(() => {
-    fetchUser();
-  }, [id]);
+    const token = localStorage.getItem("token");
+    if (!token || token === "null" || token === "undefined") {
+      setIsAuth(false);
+      Swal.fire({
+        background: "#09090b",
+        color: "#ffffff",
+        icon: "warning",
+        title: "ACCESS RESTRICTED",
+        text: "กรุณาเข้าสู่ระบบก่อนเข้าใช้งานหน้านี้",
+        confirmButtonColor: "#E10600",
+        confirmButtonText: "ไปยังหน้าเข้าสู่ระบบ",
+        allowOutsideClick: false,
+      }).then(() => {
+        router.replace("/login");
+      });
+      return;
+    }
 
-  const fetchUser = async () => {
+    setIsAuth(true);
+    if (id) {
+      fetchUser(token);
+    }
+  }, [id, router]);
+
+  // 2. ดึงข้อมูลสมาชิกตาม ID
+  const fetchUser = async (token) => {
+    const authToken = token || localStorage.getItem("token");
     setIsLoading(true);
     setIsError(false);
+
     try {
-      const response = await fetch(`${API_URL}/${id}`);
+      const response = await fetch(`${API_URL}/${id}`, {
+        headers: {
+          Authorization: `Bearer ${authToken}`,
+          "Content-Type": "application/json",
+        },
+      });
+
       if (!response.ok) throw new Error(`Status ${response.status}`);
       const data = await response.json();
 
@@ -37,29 +70,39 @@ export default function FormEdit() {
         txt_firstname: data.firstname ?? "",
         txt_lastname: data.lastname ?? "",
         txt_username: data.username ?? "",
-        txt_password: "", // ไม่ดึงรหัสผ่านเดิมกลับมาแสดง
+        txt_password: "", // ไม่นำรหัสผ่านเดิมมาแสดง
       });
     } catch (error) {
       setIsError(true);
-      await Swal.fire({ icon: "warning", title: "ไม่สามารถโหลดข้อมูลได้" });
+      await Swal.fire({
+        background: "#09090b",
+        color: "#ffffff",
+        icon: "error",
+        title: "ไม่สามารถโหลดข้อมูลได้",
+        text: error.message,
+        confirmButtonColor: "#E10600",
+      });
     } finally {
       setIsLoading(false);
     }
   };
 
   const handleChange = (e) => {
-    setForm({
-      ...form,
+    setForm((prev) => ({
+      ...prev,
       [e.target.name]: e.target.value,
-    });
+    }));
   };
 
+  // 3. ตรวจสอบความถูกต้องของฟอร์ม
   const validateForm = () => {
     if (!form.txt_firstname.trim()) {
       Swal.fire({
+        background: "#09090b",
+        color: "#ffffff",
         icon: "warning",
         title: "กรุณาระบุชื่อ",
-        text: "กรุณากรอกชื่อ",
+        confirmButtonColor: "#amber-500",
         confirmButtonText: "ตกลง",
       });
       return false;
@@ -67,9 +110,11 @@ export default function FormEdit() {
 
     if (!form.txt_lastname.trim()) {
       Swal.fire({
+        background: "#09090b",
+        color: "#ffffff",
         icon: "warning",
         title: "กรุณาระบุนามสกุล",
-        text: "กรุณากรอกนามสกุล",
+        confirmButtonColor: "#amber-500",
         confirmButtonText: "ตกลง",
       });
       return false;
@@ -77,9 +122,11 @@ export default function FormEdit() {
 
     if (!form.txt_username.trim()) {
       Swal.fire({
+        background: "#09090b",
+        color: "#ffffff",
         icon: "warning",
         title: "กรุณาระบุ Username",
-        text: "กรุณากรอก Username",
+        confirmButtonColor: "#amber-500",
         confirmButtonText: "ตกลง",
       });
       return false;
@@ -88,26 +135,30 @@ export default function FormEdit() {
     return true;
   };
 
+  // 4. ส่งข้อมูลอัปเดตไปยัง API
   const handleUpdate = async (e) => {
     e.preventDefault();
-
     if (!validateForm()) return;
+
+    const token = localStorage.getItem("token");
 
     try {
       setIsSaving(true);
 
       const payload = {
-        firstname: form.txt_firstname,
-        lastname: form.txt_lastname,
-        username: form.txt_username,
+        firstname: form.txt_firstname.trim(),
+        lastname: form.txt_lastname.trim(),
+        username: form.txt_username.trim(),
       };
-      if (form.txt_password) {
+
+      if (form.txt_password.trim()) {
         payload.password = form.txt_password;
       }
 
       const response = await fetch(`${API_URL}/${id}`, {
         method: "PUT",
         headers: {
+          Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
         body: JSON.stringify(payload),
@@ -117,145 +168,200 @@ export default function FormEdit() {
 
       if (response.ok) {
         await Swal.fire({
+          background: "#09090b",
+          color: "#ffffff",
           icon: "success",
           title: "บันทึกสำเร็จ!",
-          text: "ปรับปรุงข้อมูลผู้ใช้เรียบร้อยแล้ว",
-          confirmButtonColor: "#2E75B6",
+          text: "ปรับปรุงข้อมูลสมาชิกเรียบร้อยแล้ว",
+          timer: 1500,
+          showConfirmButton: false,
         });
 
-        router.push("/users"); // กลับไปหน้ารายชื่อ
+        router.push("/users");
         return;
       }
 
+      // ดักจับ Error status ต่างๆ
       if (response.status === 400) {
         await Swal.fire({
+          background: "#09090b",
+          color: "#ffffff",
           icon: "warning",
-          title: `ข้อมูลไม่ถูกต้อง (status: ${response.status})`,
-          text: result.message || "เกิดข้อผิดพลาด",
-          confirmButtonText: "ตกลง",
-          confirmButtonColor: "#fecc00",
-        });
-      } else if (response.status >= 500) {
-        await Swal.fire({
-          icon: "error", // แก้ที่ 5: เดิมพิมพ์เป็น con
-          title: `เกิดข้อผิดพลาดที่เซิร์ฟเวอร์ (status: ${response.status})`,
-          text: result.message || "เกิดข้อผิดพลาด",
-          confirmButtonText: "ตกลง",
-          confirmButtonColor: "#fe0505",
+          title: `ข้อมูลไม่ถูกต้อง (${response.status})`,
+          text: result.message || "กรุณาตรวจสอบข้อมูลอีกครั้ง",
+          confirmButtonColor: "#f59e0b",
         });
       } else {
-        // แก้ที่ 6: ดักกรณีที่เหลือ เช่น 401 / 403 / 404
         await Swal.fire({
+          background: "#09090b",
+          color: "#ffffff",
           icon: "error",
-          title: `บันทึกไม่สำเร็จ (status: ${response.status})`,
-          text: result.message || "เกิดข้อผิดพลาด",
-          confirmButtonText: "ตกลง",
+          title: `บันทึกไม่สำเร็จ (${response.status})`,
+          text: result.message || "เกิดข้อผิดพลาดในการอัปเดตข้อมูล",
+          confirmButtonColor: "#E10600",
         });
       }
     } catch (error) {
-      // เข้าที่นี่เฉพาะตอนยิง request ไม่ถึง server เลย
       await Swal.fire({
-        icon: "warning",
-        title: "ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์ได้",
-        text: "กรุณาตรวจสอบการเชื่อมต่ออินเทอร์เน็ต แล้วลองใหม่อีกครั้ง",
-        confirmButtonText: "ตกลง",
-        confirmButtonColor: "#fc006dcc",
+        background: "#09090b",
+        color: "#ffffff",
+        icon: "error",
+        title: "การเชื่อมต่อล้มเหลว",
+        text: "ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์ได้ กรุณาตรวจสอบอินเทอร์เน็ต",
+        confirmButtonColor: "#E10600",
       });
     } finally {
       setIsSaving(false);
     }
   };
 
-  if (isLoading) return <p className="p-6">กำลังโหลดข้อมูล...</p>;
-  if (isError) return <p className="p-6">เกิดข้อผิดพลาดในการโหลดข้อมูล</p>;
+  // ---- สถานะ 0: ตรวจสอบสิทธิ์ ----
+  if (!isAuth) {
+    return (
+      <div className="min-h-screen bg-zinc-950 flex items-center justify-center">
+        <div className="flex flex-col items-center gap-3">
+          <div className="w-10 h-10 border-4 border-[#E10600] border-t-transparent rounded-full animate-spin" />
+          <span className="text-xs font-mono text-zinc-400 tracking-widest uppercase">
+            Checking Authentication...
+          </span>
+        </div>
+      </div>
+    );
+  }
 
-  return (
-    <div className="relative min-h-screen overflow-hidden bg-gradient-to-br from-indigo-950 via-purple-900 to-fuchsia-900 flex items-center justify-center p-4 sm:p-6">
+  // ---- สถานะ 1: กำลังโหลดข้อมูล ----
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-zinc-950 flex items-center justify-center">
+        <div className="bg-zinc-900/90 border border-zinc-800 backdrop-blur-md rounded-2xl px-8 py-6 shadow-2xl text-center">
+          <div className="mx-auto mb-3 h-8 w-8 animate-spin rounded-full border-4 border-amber-500 border-t-transparent" />
+          <p className="text-zinc-300 font-medium text-sm font-mono">กำลังดึงข้อมูลผู้ใช้...</p>
+        </div>
+      </div>
+    );
+  }
 
-      <div className="absolute -top-16 -left-16 w-56 h-56 sm:-top-24 sm:-left-24 sm:w-96 sm:h-96 bg-fuchsia-500 rounded-full blur-3xl opacity-30 animate-pulse"></div>
-
-      <div className="absolute -bottom-16 -right-16 w-56 h-56 sm:-bottom-24 sm:-right-24 sm:w-96 sm:h-96 bg-blue-500 rounded-full blur-3xl opacity-30 animate-pulse"></div>
-
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-48 h-48 sm:w-72 sm:h-72 bg-indigo-400 rounded-full blur-3xl opacity-20"></div>
-
-      <div className="relative w-full max-w-md sm:max-w-md rounded-2xl sm:rounded-[2rem] bg-white/90 backdrop-blur-xl shadow-2xl shadow-purple-950/40 border border-white/70 overflow-hidden ring-1 ring-white/40">
-      
-        <div className="bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 px-6 sm:px-8 pt-8 sm:pt-10 pb-14 sm:pb-16 text-center relative">
-          {/* Header */}
-          <div className="border-b px-6 py-4">
-            <h1 className="relative text-2xl sm:text-3xl font-extrabold text-white tracking-tight drop-shadow-sm">
-              แก้ไขข้อมูลสมาชิก #{id}
-            </h1>
+  // ---- สถานะ 2: เกิดข้อผิดพลาด ----
+  if (isError) {
+    return (
+      <div className="min-h-screen bg-zinc-950 flex items-center justify-center px-4">
+        <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 shadow-2xl text-center max-w-sm w-full">
+          <p className="text-red-500 font-bold mb-4">เกิดข้อผิดพลาดในการโหลดข้อมูล</p>
+          <div className="flex gap-2">
+            <button
+              onClick={() => router.push("/users")}
+              className="flex-1 py-2 bg-zinc-800 text-zinc-300 rounded-xl text-sm font-medium hover:bg-zinc-700 transition"
+            >
+              กลับ
+            </button>
+            <button
+              onClick={() => fetchUser()}
+              className="flex-1 py-2 bg-[#E10600] text-white rounded-xl text-sm font-medium hover:bg-red-700 transition"
+            >
+              ลองใหม่
+            </button>
           </div>
         </div>
+      </div>
+    );
+  }
 
-        <form onSubmit={handleUpdate} className="p-6 space-y-5">
-          <label className="block text-sm text-black font-medium mb-1.5">
-            ชื่อ
-          </label>
-          <input
-            type="text"
-            name="txt_firstname"
-            value={form.txt_firstname} /* แก้ที่ 3: เดิมเป็น defaultValue */
-            onChange={handleChange}
-            className="w-full px-4 py-2.5 rounded-xl border border-indigo-200 bg-indigo-50/40 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 focus:bg-white transition-all duration-200 text-black placeholder:text-gray-400"
-          />
-
-          <label className="block text-sm text-black font-medium mb-1.5">
-            นามสกุล
-          </label>
-          <input
-            type="text"
-            name="txt_lastname"
-            value={form.txt_lastname}
-            onChange={handleChange}
-            className="w-full px-4 py-2.5 rounded-xl border border-indigo-200 bg-indigo-50/40 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 focus:bg-white transition-all duration-200 text-black placeholder:text-gray-400"
-          />
-
-          <label className="block text-sm text-black font-medium mb-1.5">
-            ชื่อผู้ใช้
-          </label>
-          <input
-            type="text"
-            name="txt_username"
-            value={form.txt_username}
-            onChange={handleChange}
-            className="w-full px-4 py-2.5 rounded-xl border border-indigo-200 bg-indigo-50/40 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 focus:bg-white transition-all duration-200 text-black placeholder:text-gray-400"
-          />
-
-          <label className="block text-sm text-black font-medium mb-1.5">
-            รหัสผ่าน{" "}
-            <span className="text-sm text-gray-500">
-              (เว้นว่างไว้ถ้าไม่ต้องการเปลี่ยน)
+  // ---- สถานะ 3: แสดงฟอร์มแก้ไข ----
+  return (
+    <div className="min-h-screen bg-zinc-950 py-10 px-4 text-white flex items-center justify-center">
+      <div className="w-full max-w-md">
+        {/* Card Container */}
+        <div className="bg-zinc-900 border border-zinc-800 rounded-2xl shadow-2xl overflow-hidden">
+          {/* Header */}
+          <div className="bg-zinc-950 p-6 border-b border-zinc-800">
+            <span className="text-xs font-mono font-bold text-amber-500 tracking-widest uppercase bg-amber-500/10 px-3 py-1 rounded-full border border-amber-500/30">
+              EDIT USER PROFILE
             </span>
-          </label>
-          <input
-            type="password"
-            name="txt_password"
-            value={form.txt_password}
-            onChange={handleChange}
-            className="w-full px-4 py-2.5 rounded-xl border border-indigo-200 bg-indigo-50/40 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 focus:bg-white transition-all duration-200 text-black placeholder:text-gray-400"
-          />
-
-          <div className="flex gap-3">
-            <button
-              type="submit"
-              disabled={isSaving}
-              className="w-full py-2.5 mt-2 rounded-xl bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 text-white font-semibold text-sm shadow-md transition-all duration-200 hover:shadow-lg hover:brightness-105 active:scale-[0.98]"
-            >
-              {isSaving ? "กำลังบันทึก..." : "บันทึกข้อมูล"}
-            </button>
-
-            <button
-              type="button"
-              onClick={() => router.push("/users")}
-              className="w-full py-2.5 mt-2 rounded-xl bg-gradient-to-r from-gray-500 via-gray-600 to-gray-700 text-white font-semibold text-sm shadow-md transition-all duration-200 hover:shadow-lg hover:brightness-105 active:scale-[0.98]"
-            >
-              ยกเลิก
-            </button>
+            <h1 className="text-2xl font-black italic uppercase tracking-tight mt-3">
+              แก้ไขข้อมูล <span className="text-amber-500">#{id}</span>
+            </h1>
           </div>
-        </form>
+
+          {/* Form */}
+          <form onSubmit={handleUpdate} className="p-6 space-y-4">
+            <div>
+              <label className="block text-xs font-mono text-zinc-400 uppercase mb-1">
+                ชื่อ (Firstname)
+              </label>
+              <input
+                type="text"
+                name="txt_firstname"
+                value={form.txt_firstname}
+                onChange={handleChange}
+                placeholder="กรอกชื่อ"
+                className="w-full px-4 py-2.5 rounded-xl border border-zinc-800 bg-zinc-950/70 text-zinc-100 placeholder:text-zinc-600 focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition-all font-medium text-sm"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-mono text-zinc-400 uppercase mb-1">
+                นามสกุล (Lastname)
+              </label>
+              <input
+                type="text"
+                name="txt_lastname"
+                value={form.txt_lastname}
+                onChange={handleChange}
+                placeholder="กรอกนามสกุล"
+                className="w-full px-4 py-2.5 rounded-xl border border-zinc-800 bg-zinc-950/70 text-zinc-100 placeholder:text-zinc-600 focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition-all font-medium text-sm"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-mono text-zinc-400 uppercase mb-1">
+                ชื่อผู้ใช้ (Username)
+              </label>
+              <input
+                type="text"
+                name="txt_username"
+                value={form.txt_username}
+                onChange={handleChange}
+                placeholder="กรอกชื่อผู้ใช้"
+                className="w-full px-4 py-2.5 rounded-xl border border-zinc-800 bg-zinc-950/70 text-zinc-100 placeholder:text-zinc-600 focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition-all font-mono text-sm"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-mono text-zinc-400 uppercase mb-1">
+                รหัสผ่านใหม่ <span className="text-zinc-500 font-normal">(เว้นว่างหากไม่ต้องการเปลี่ยน)</span>
+              </label>
+              <input
+                type="password"
+                name="txt_password"
+                value={form.txt_password}
+                onChange={handleChange}
+                placeholder="••••••••"
+                className="w-full px-4 py-2.5 rounded-xl border border-zinc-800 bg-zinc-950/70 text-zinc-100 placeholder:text-zinc-600 focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition-all font-mono text-sm"
+              />
+            </div>
+
+            {/* Actions */}
+            <div className="flex gap-3 pt-4">
+              <button
+                type="button"
+                onClick={() => router.push("/users")}
+                className="flex-1 py-2.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 rounded-xl text-sm font-semibold transition"
+              >
+                ยกเลิก
+              </button>
+              <button
+                type="submit"
+                disabled={isSaving}
+                className="flex-1 py-2.5 bg-amber-500 hover:bg-amber-600 disabled:bg-amber-500/50 text-zinc-950 font-bold rounded-xl text-sm transition shadow-lg shadow-amber-500/10"
+              >
+                {isSaving ? "กำลังบันทึก..." : "บันทึกข้อมูล"}
+              </button>
+            </div>
+          </form>
+        </div>
       </div>
     </div>
   );
 }
+
+export default withAuth(FormEdit);
