@@ -1,36 +1,36 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Navigation from "@/components/navigation";
 
-// ข้อมูลรูปภาพนักขับความละเอียดสูงอย่างเป็นทางการ (Formula1.com CDN)
+// 📸 ข้อมูลรูปภาพนักขับความละเอียดสูงแบบ 4K/Ultra-HD (Formula1.com CDN)
 const DRIVER_IMAGES = {
-  ANT: "https://media.formula1.com/image/upload/c_lfill,w_440/q_auto/d_common:f1:2026:fallback:driver:2026fallbackdriverright.webp/v1740000001/common/f1/2026/mercedes/andant01/2026mercedesandant01right.webp",
-  RUS: "https://media.formula1.com/image/upload/c_lfill,w_440/q_auto/d_common:f1:2026:fallback:driver:2026fallbackdriverright.webp/v1740000001/common/f1/2026/mercedes/georus01/2026mercedesgeorus01right.webp",
-  HAM: "https://media.formula1.com/image/upload/c_lfill,w_440/q_auto/d_common:f1:2026:fallback:driver:2026fallbackdriverright.webp/v1740000001/common/f1/2026/ferrari/lewham01/2026ferrarilewham01right.webp",
-  NOR: "https://media.formula1.com/image/upload/c_lfill,w_440/q_auto/d_common:f1:2026:fallback:driver:2026fallbackdriverright.webp/v1740000001/common/f1/2026/mclaren/lannor01/2026mclarenlannor01right.webp",
-  LEC: "https://media.formula1.com/image/upload/c_lfill,w_440/q_auto/d_common:f1:2026:fallback:driver:2026fallbackdriverright.webp/v1740000001/common/f1/2026/ferrari/chalec01/2026ferrarichalec01right.webp",
-  VER: "https://media.formula1.com/image/upload/c_lfill,w_440/q_auto/d_common:f1:2026:fallback:driver:2026fallbackdriverright.webp/v1740000001/common/f1/2026/redbullracing/maxver01/2026redbullracingmaxver01right.webp",
-  PIA: "https://media.formula1.com/image/upload/c_lfill,w_440/q_auto/d_common:f1:2026:fallback:driver:2026fallbackdriverright.webp/v1740000001/common/f1/2026/mclaren/oscpia01/2026mclarenoscpia01right.webp",
-  HAD: "https://media.formula1.com/image/upload/c_lfill,w_440/q_auto/d_common:f1:2026:fallback:driver:2026fallbackdriverright.webp/v1740000001/common/f1/2026/redbullracing/isahad01/2026redbullracingisahad01right.webp",
-  LAW: "https://media.formula1.com/image/upload/c_lfill,w_440/q_auto/d_common:f1:2026:fallback:driver:2026fallbackdriverright.webp/v1740000001/common/f1/2026/redbullracing/lialaw01/2026redbullracinglialaw01right.webp",
-  GAS: "https://media.formula1.com/image/upload/c_lfill,w_440/q_auto/d_common:f1:2026:fallback:driver:2026fallbackdriverright.webp/v1740000001/common/f1/2026/alpine/piegas01/2026alpinepiegas01right.webp",
-  LIN: "https://media.formula1.com/image/upload/c_lfill,w_440/q_auto/d_common:f1:2026:fallback:driver:2026fallbackdriverright.webp/v1740000001/common/f1/2026/racingbulls/arvlin01/2026racingbullsarvlin01right.webp",
-  COL: "https://media.formula1.com/image/upload/c_lfill,w_440/q_auto/d_common:f1:2026:fallback:driver:2026fallbackdriverright.webp/v1740000001/common/f1/2026/alpine/fracol01/2026alpinefracol01right.webp",
-  BEA: "https://media.formula1.com/image/upload/c_lfill,w_440/q_auto/d_common:f1:2026:fallback:driver:2026fallbackdriverright.webp/v1740000001/common/f1/2026/haasf1team/olibea01/2026haasf1teamolibea01right.webp",
-  BOR: "https://media.formula1.com/image/upload/c_lfill,w_440/q_auto/d_common:f1:2026:fallback:driver:2026fallbackdriverright.webp/v1740000001/common/f1/2026/audi/gabbor01/2026audigabbor01right.webp",
-  HUL: "https://media.formula1.com/image/upload/c_lfill,w_440/q_auto/d_common:f1:2026:fallback:driver:2026fallbackdriverright.webp/v1740000001/common/f1/2026/audi/nichul01/2026audinichul01right.webp",
-  SAI: "https://media.formula1.com/image/upload/c_lfill,w_440/q_auto/d_common:f1:2026:fallback:driver:2026fallbackdriverright.webp/v1740000001/common/f1/2026/williams/carsai01/2026williamscarsai01right.webp",
-  ALB: "https://media.formula1.com/image/upload/c_lfill,w_440/q_auto/d_common:f1:2026:fallback:driver:2026fallbackdriverright.webp/v1740000001/common/f1/2026/williams/alealb01/2026williamsalealb01right.webp",
-  OCO: "https://media.formula1.com/image/upload/c_lfill,w_440/q_auto/d_common:f1:2026:fallback:driver:2026fallbackdriverright.webp/v1740000001/common/f1/2026/haasf1team/estoco01/2026haasf1teamestoco01right.webp",
-  ALO: "https://media.formula1.com/image/upload/c_lfill,w_440/q_auto/d_common:f1:2026:fallback:driver:2026fallbackdriverright.webp/v1740000001/common/f1/2026/astonmartin/feralo01/2026astonmartinferalo01right.webp",
-  TSU: "https://media.formula1.com/image/upload/c_lfill,w_440/q_auto/d_common:f1:2026:fallback:driver:2026fallbackdriverright.webp/v1740000001/common/f1/2026/racingbulls/yuktsu01/2026racingbullsyuktsu01right.webp",
-  STR: "https://media.formula1.com/image/upload/c_lfill,w_440/q_auto/d_common:f1:2026:fallback:driver:2026fallbackdriverright.webp/v1740000001/common/f1/2026/astonmartin/lanstr01/2026astonmartinlanstr01right.webp",
-  BOT: "https://media.formula1.com/image/upload/c_lfill,w_440/q_auto/d_common:f1:2026:fallback:driver:2026fallbackdriverright.webp/v1740000001/common/f1/2026/cadillac/valbot01/2026cadillacvalbot01right.webp",
-  PER: "https://media.formula1.com/image/upload/c_lfill,w_440/q_auto/d_common:f1:2026:fallback:driver:2026fallbackdriverright.webp/v1740000001/common/f1/2026/cadillac/serper01/2026cadillacserper01right.webp"
+  ANT: "https://media.formula1.com/image/upload/c_lfill,w_2560/q_auto:best/d_common:f1:2026:fallback:driver:2026fallbackdriverright.webp/v1740000001/common/f1/2026/mercedes/andant01/2026mercedesandant01right.webp",
+  RUS: "https://media.formula1.com/image/upload/c_lfill,w_2560/q_auto:best/d_common:f1:2026:fallback:driver:2026fallbackdriverright.webp/v1740000001/common/f1/2026/mercedes/georus01/2026mercedesgeorus01right.webp",
+  HAM: "https://media.formula1.com/image/upload/c_lfill,w_2560/q_auto:best/d_common:f1:2026:fallback:driver:2026fallbackdriverright.webp/v1740000001/common/f1/2026/ferrari/lewham01/2026ferrarilewham01right.webp",
+  NOR: "https://media.formula1.com/image/upload/c_lfill,w_2560/q_auto:best/d_common:f1:2026:fallback:driver:2026fallbackdriverright.webp/v1740000001/common/f1/2026/mclaren/lannor01/2026mclarenlannor01right.webp",
+  LEC: "https://media.formula1.com/image/upload/c_lfill,w_2560/q_auto:best/d_common:f1:2026:fallback:driver:2026fallbackdriverright.webp/v1740000001/common/f1/2026/ferrari/chalec01/2026ferrarichalec01right.webp",
+  VER: "https://media.formula1.com/image/upload/c_lfill,w_2560/q_auto:best/d_common:f1:2026:fallback:driver:2026fallbackdriverright.webp/v1740000001/common/f1/2026/redbullracing/maxver01/2026redbullracingmaxver01right.webp",
+  PIA: "https://media.formula1.com/image/upload/c_lfill,w_2560/q_auto:best/d_common:f1:2026:fallback:driver:2026fallbackdriverright.webp/v1740000001/common/f1/2026/mclaren/oscpia01/2026mclarenoscpia01right.webp",
+  HAD: "https://media.formula1.com/image/upload/c_lfill,w_2560/q_auto:best/d_common:f1:2026:fallback:driver:2026fallbackdriverright.webp/v1740000001/common/f1/2026/redbullracing/isahad01/2026redbullracingisahad01right.webp",
+  LAW: "https://media.formula1.com/image/upload/c_lfill,w_2560/q_auto:best/d_common:f1:2026:fallback:driver:2026fallbackdriverright.webp/v1740000001/common/f1/2026/redbullracing/lialaw01/2026redbullracinglialaw01right.webp",
+  GAS: "https://media.formula1.com/image/upload/c_lfill,w_2560/q_auto:best/d_common:f1:2026:fallback:driver:2026fallbackdriverright.webp/v1740000001/common/f1/2026/alpine/piegas01/2026alpinepiegas01right.webp",
+  LIN: "https://media.formula1.com/image/upload/c_lfill,w_2560/q_auto:best/d_common:f1:2026:fallback:driver:2026fallbackdriverright.webp/v1740000001/common/f1/2026/racingbulls/arvlin01/2026racingbullsarvlin01right.webp",
+  COL: "https://media.formula1.com/image/upload/c_lfill,w_2560/q_auto:best/d_common:f1:2026:fallback:driver:2026fallbackdriverright.webp/v1740000001/common/f1/2026/alpine/fracol01/2026alpinefracol01right.webp",
+  BEA: "https://media.formula1.com/image/upload/c_lfill,w_2560/q_auto:best/d_common:f1:2026:fallback:driver:2026fallbackdriverright.webp/v1740000001/common/f1/2026/haasf1team/olibea01/2026haasf1teamolibea01right.webp",
+  BOR: "https://media.formula1.com/image/upload/c_lfill,w_2560/q_auto:best/d_common:f1:2026:fallback:driver:2026fallbackdriverright.webp/v1740000001/common/f1/2026/audi/gabbor01/2026audigabbor01right.webp",
+  HUL: "https://media.formula1.com/image/upload/c_lfill,w_2560/q_auto:best/d_common:f1:2026:fallback:driver:2026fallbackdriverright.webp/v1740000001/common/f1/2026/audi/nichul01/2026audinichul01right.webp",
+  SAI: "https://media.formula1.com/image/upload/c_lfill,w_2560/q_auto:best/d_common:f1:2026:fallback:driver:2026fallbackdriverright.webp/v1740000001/common/f1/2026/williams/carsai01/2026williamscarsai01right.webp",
+  ALB: "https://media.formula1.com/image/upload/c_lfill,w_2560/q_auto:best/d_common:f1:2026:fallback:driver:2026fallbackdriverright.webp/v1740000001/common/f1/2026/williams/alealb01/2026williamsalealb01right.webp",
+  OCO: "https://media.formula1.com/image/upload/c_lfill,w_2560/q_auto:best/d_common:f1:2026:fallback:driver:2026fallbackdriverright.webp/v1740000001/common/f1/2026/haasf1team/estoco01/2026haasf1teamestoco01right.webp",
+  ALO: "https://media.formula1.com/image/upload/c_lfill,w_2560/q_auto:best/d_common:f1:2026:fallback:driver:2026fallbackdriverright.webp/v1740000001/common/f1/2026/astonmartin/feralo01/2026astonmartinferalo01right.webp",
+  TSU: "https://media.formula1.com/image/upload/c_lfill,w_2560/q_auto:best/d_common:f1:2026:fallback:driver:2026fallbackdriverright.webp/v1740000001/common/f1/2026/racingbulls/yuktsu01/2026racingbullsyuktsu01right.webp",
+  STR: "https://media.formula1.com/image/upload/c_lfill,w_2560/q_auto:best/d_common:f1:2026:fallback:driver:2026fallbackdriverright.webp/v1740000001/common/f1/2026/astonmartin/lanstr01/2026astonmartinlanstr01right.webp",
+  BOT: "https://media.formula1.com/image/upload/c_lfill,w_2560/q_auto:best/d_common:f1:2026:fallback:driver:2026fallbackdriverright.webp/v1740000001/common/f1/2026/cadillac/valbot01/2026cadillacvalbot01right.webp",
+  PER: "https://media.formula1.com/image/upload/c_lfill,w_2560/q_auto:best/d_common:f1:2026:fallback:driver:2026fallbackdriverright.webp/v1740000001/common/f1/2026/cadillac/serper01/2026cadillacserper01right.webp"
 };
 
-// ข้อมูลสนามแข่ง F1 ฤดูกาล 2026 พร้อมสเปกและแกลเลอรีรูปภาพ
+// ข้อมูลสนามแข่ง F1 ฤดูกาล 2026
 const F1_2026_CALENDAR = [
   {
     round: "ROUND 01",
@@ -38,7 +38,7 @@ const F1_2026_CALENDAR = [
     flag: "🇦🇺",
     grandPrix: "Australian Grand Prix 2026",
     circuit: "Albert Park Circuit",
-    circuitImage: "https://media.formula1.com/image/upload/f_auto/q_auto/v1677244975/content/dam/fom-website/2018-redesign-assets/Circuit%20maps%2016x9/Australia_Circuit.png",
+    circuitImage: "https://media.formula1.com/image/upload/f_auto/q_auto:best/v1677244975/content/dam/fom-website/2018-redesign-assets/Circuit%20maps%2016x9/Australia_Circuit.png",
     date: "06 - 08 MAR",
     localTime: "15:00 AEST",
     thaiTime: "11:00 น. (เวลาไทย)",
@@ -48,8 +48,8 @@ const F1_2026_CALENDAR = [
     laps: 58,
     lapRecord: "1:19.813 (Charles Leclerc)",
     gallery: [
-      "https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?auto=format&fit=crop&w=1200&q=80",
-      "https://images.unsplash.com/photo-1511919884226-fd3cad34687c?auto=format&fit=crop&w=1200&q=80"
+      "https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?auto=format&fit=crop&w=3840&q=100",
+      "https://images.unsplash.com/photo-1511919884226-fd3cad34687c?auto=format&fit=crop&w=3840&q=100"
     ],
     top3: [
       { pos: "1ST", code: "RUS", driver: "George Russell", team: "Mercedes", time: "1:24:12.420", isWinner: true },
@@ -63,7 +63,7 @@ const F1_2026_CALENDAR = [
     flag: "🇨🇳",
     grandPrix: "Chinese Grand Prix 2026",
     circuit: "Shanghai International Circuit",
-    circuitImage: "https://media.formula1.com/image/upload/f_auto/q_auto/v1677244975/content/dam/fom-website/2018-redesign-assets/Circuit%20maps%2016x9/China_Circuit.png",
+    circuitImage: "https://media.formula1.com/image/upload/f_auto/q_auto:best/v1677244975/content/dam/fom-website/2018-redesign-assets/Circuit%20maps%2016x9/China_Circuit.png",
     date: "13 - 15 MAR",
     localTime: "15:00 CST",
     thaiTime: "14:00 น. (เวลาไทย)",
@@ -73,8 +73,8 @@ const F1_2026_CALENDAR = [
     laps: 56,
     lapRecord: "1:32.238 (Michael Schumacher)",
     gallery: [
-      "https://images.unsplash.com/photo-1552519507-da3b142c6e3d?auto=format&fit=crop&w=1200&q=80",
-      "https://images.unsplash.com/photo-1617814076367-b759c7d7e738?auto=format&fit=crop&w=1200&q=80"
+      "https://images.unsplash.com/photo-1552519507-da3b142c6e3d?auto=format&fit=crop&w=3840&q=100",
+      "https://images.unsplash.com/photo-1617814076367-b759c7d7e738?auto=format&fit=crop&w=3840&q=100"
     ],
     top3: [
       { pos: "1ST", code: "ANT", driver: "Kimi Antonelli", team: "Mercedes", time: "1:33:15.607", isWinner: true },
@@ -88,7 +88,7 @@ const F1_2026_CALENDAR = [
     flag: "🇯🇵",
     grandPrix: "Japanese Grand Prix 2026",
     circuit: "Suzuka Circuit",
-    circuitImage: "https://media.formula1.com/image/upload/f_auto/q_auto/v1677244975/content/dam/fom-website/2018-redesign-assets/Circuit%20maps%2016x9/Japan_Circuit.png",
+    circuitImage: "https://media.formula1.com/image/upload/f_auto/q_auto:best/v1677244975/content/dam/fom-website/2018-redesign-assets/Circuit%20maps%2016x9/Japan_Circuit.png",
     date: "27 - 29 MAR",
     localTime: "14:00 JST",
     thaiTime: "12:00 น. (เวลาไทย)",
@@ -98,8 +98,8 @@ const F1_2026_CALENDAR = [
     laps: 53,
     lapRecord: "1:30.983 (Lewis Hamilton)",
     gallery: [
-      "https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=1200&q=80",
-      "https://images.unsplash.com/photo-1563720223185-11003d516935?auto=format&fit=crop&w=1200&q=80"
+      "https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=3840&q=100",
+      "https://images.unsplash.com/photo-1563720223185-11003d516935?auto=format&fit=crop&w=3840&q=100"
     ],
     top3: [
       { pos: "1ST", code: "ANT", driver: "Kimi Antonelli", team: "Mercedes", time: "1:28:44.112", isWinner: true },
@@ -113,7 +113,7 @@ const F1_2026_CALENDAR = [
     flag: "🇺🇸",
     grandPrix: "Miami Grand Prix 2026",
     circuit: "Miami International Autodrome",
-    circuitImage: "https://media.formula1.com/image/upload/f_auto/q_auto/v1677244975/content/dam/fom-website/2018-redesign-assets/Circuit%20maps%2016x9/Miami_Circuit.png",
+    circuitImage: "https://media.formula1.com/image/upload/f_auto/q_auto:best/v1677244975/content/dam/fom-website/2018-redesign-assets/Circuit%20maps%2016x9/Miami_Circuit.png",
     date: "01 - 03 MAY",
     localTime: "16:00 EDT",
     thaiTime: "03:00 น. (+1 วัน / เวลาไทย)",
@@ -123,8 +123,8 @@ const F1_2026_CALENDAR = [
     laps: 57,
     lapRecord: "1:29.708 (Max Verstappen)",
     gallery: [
-      "https://images.unsplash.com/photo-1580273916550-e323be2ae537?auto=format&fit=crop&w=1200&q=80",
-      "https://images.unsplash.com/photo-1542282088-72c9c27ed0cd?auto=format&fit=crop&w=1200&q=80"
+      "https://images.unsplash.com/photo-1580273916550-e323be2ae537?auto=format&fit=crop&w=3840&q=100",
+      "https://images.unsplash.com/photo-1542282088-72c9c27ed0cd?auto=format&fit=crop&w=3840&q=100"
     ],
     top3: [
       { pos: "1ST", code: "ANT", driver: "Kimi Antonelli", team: "Mercedes", time: "1:30:22.500", isWinner: true },
@@ -138,7 +138,7 @@ const F1_2026_CALENDAR = [
     flag: "🇨🇦",
     grandPrix: "Canadian Grand Prix 2026",
     circuit: "Circuit Gilles-Villeneuve",
-    circuitImage: "https://media.formula1.com/image/upload/f_auto/q_auto/v1677244975/content/dam/fom-website/2018-redesign-assets/Circuit%20maps%2016x9/Canada_Circuit.png",
+    circuitImage: "https://media.formula1.com/image/upload/f_auto/q_auto:best/v1677244975/content/dam/fom-website/2018-redesign-assets/Circuit%20maps%2016x9/Canada_Circuit.png",
     date: "22 - 24 MAY",
     localTime: "16:00 EDT",
     thaiTime: "03:00 น. (+1 วัน / เวลาไทย)",
@@ -148,7 +148,7 @@ const F1_2026_CALENDAR = [
     laps: 70,
     lapRecord: "1:13.078 (Valtteri Bottas)",
     gallery: [
-      "https://images.unsplash.com/photo-1617788138017-80ad40651399?auto=format&fit=crop&w=1200&q=80"
+      "https://images.unsplash.com/photo-1617788138017-80ad40651399?auto=format&fit=crop&w=3840&q=100"
     ],
     top3: [
       { pos: "1ST", code: "ANT", driver: "Kimi Antonelli", team: "Mercedes", time: "1:35:01.880", isWinner: true },
@@ -162,7 +162,7 @@ const F1_2026_CALENDAR = [
     flag: "🇲🇨",
     grandPrix: "Monaco Grand Prix 2026",
     circuit: "Circuit de Monaco",
-    circuitImage: "https://media.formula1.com/image/upload/f_auto/q_auto/v1677244975/content/dam/fom-website/2018-redesign-assets/Circuit%20maps%2016x9/Monaco_Circuit.png",
+    circuitImage: "https://media.formula1.com/image/upload/f_auto/q_auto:best/v1677244975/content/dam/fom-website/2018-redesign-assets/Circuit%20maps%2016x9/Monaco_Circuit.png",
     date: "05 - 07 JUN",
     localTime: "15:00 CEST",
     thaiTime: "20:00 น. (เวลาไทย)",
@@ -172,8 +172,8 @@ const F1_2026_CALENDAR = [
     laps: 78,
     lapRecord: "1:12.909 (Lewis Hamilton)",
     gallery: [
-      "https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?auto=format&fit=crop&w=1200&q=80",
-      "https://images.unsplash.com/photo-1508974239320-0a029497e820?auto=format&fit=crop&w=1200&q=80"
+      "https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?auto=format&fit=crop&w=3840&q=100",
+      "https://images.unsplash.com/photo-1508974239320-0a029497e820?auto=format&fit=crop&w=3840&q=100"
     ],
     top3: [
       { pos: "1ST", code: "ANT", driver: "Kimi Antonelli", team: "Mercedes", time: "1:41:16.230", isWinner: true },
@@ -187,7 +187,7 @@ const F1_2026_CALENDAR = [
     flag: "🇪🇸",
     grandPrix: "Spanish Grand Prix 2026",
     circuit: "Circuit de Barcelona-Catalunya",
-    circuitImage: "https://media.formula1.com/image/upload/f_auto/q_auto/v1677244975/content/dam/fom-website/2018-redesign-assets/Circuit%20maps%2016x9/Spain_Circuit.png",
+    circuitImage: "https://media.formula1.com/image/upload/f_auto/q_auto:best/v1677244975/content/dam/fom-website/2018-redesign-assets/Circuit%20maps%2016x9/Spain_Circuit.png",
     date: "12 - 14 JUN",
     localTime: "15:00 CEST",
     thaiTime: "20:00 น. (เวลาไทย)",
@@ -197,7 +197,7 @@ const F1_2026_CALENDAR = [
     laps: 66,
     lapRecord: "1:16.330 (Max Verstappen)",
     gallery: [
-      "https://images.unsplash.com/photo-1541348263662-e08266f92f3a?auto=format&fit=crop&w=1200&q=80"
+      "https://images.unsplash.com/photo-1541348263662-e08266f92f3a?auto=format&fit=crop&w=3840&q=100"
     ],
     top3: [
       { pos: "1ST", code: "HAM", driver: "Lewis Hamilton", team: "Ferrari", time: "1:29:08.777", isWinner: true },
@@ -211,7 +211,7 @@ const F1_2026_CALENDAR = [
     flag: "🇦🇹",
     grandPrix: "Austrian Grand Prix 2026",
     circuit: "Red Bull Ring",
-    circuitImage: "https://media.formula1.com/image/upload/f_auto/q_auto/v1677244975/content/dam/fom-website/2018-redesign-assets/Circuit%20maps%2016x9/Austria_Circuit.png",
+    circuitImage: "https://media.formula1.com/image/upload/f_auto/q_auto:best/v1677244975/content/dam/fom-website/2018-redesign-assets/Circuit%20maps%2016x9/Austria_Circuit.png",
     date: "26 - 28 JUN",
     localTime: "15:00 CEST",
     thaiTime: "20:00 น. (เวลาไทย)",
@@ -221,7 +221,7 @@ const F1_2026_CALENDAR = [
     laps: 71,
     lapRecord: "1:05.619 (Carlos Sainz)",
     gallery: [
-      "https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?auto=format&fit=crop&w=1200&q=80"
+      "https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?auto=format&fit=crop&w=3840&q=100"
     ],
     top3: [
       { pos: "1ST", code: "RUS", driver: "George Russell", team: "Mercedes", time: "1:24:22.990", isWinner: true },
@@ -235,7 +235,7 @@ const F1_2026_CALENDAR = [
     flag: "🇬🇧",
     grandPrix: "British Grand Prix 2026",
     circuit: "Silverstone Circuit",
-    circuitImage: "https://media.formula1.com/image/upload/f_auto/q_auto/v1677244975/content/dam/fom-website/2018-redesign-assets/Circuit%20maps%2016x9/Great_Britain_Circuit.png",
+    circuitImage: "https://media.formula1.com/image/upload/f_auto/q_auto:best/v1677244975/content/dam/fom-website/2018-redesign-assets/Circuit%20maps%2016x9/Great_Britain_Circuit.png",
     date: "03 - 05 JUL",
     localTime: "15:00 BST",
     thaiTime: "21:00 น. (เวลาไทย)",
@@ -245,7 +245,7 @@ const F1_2026_CALENDAR = [
     laps: 52,
     lapRecord: "1:27.097 (Max Verstappen)",
     gallery: [
-      "https://images.unsplash.com/photo-1511919884226-fd3cad34687c?auto=format&fit=crop&w=1200&q=80"
+      "https://images.unsplash.com/photo-1511919884226-fd3cad34687c?auto=format&fit=crop&w=3840&q=100"
     ],
     top3: [
       { pos: "1ST", code: "LEC", driver: "Charles Leclerc", team: "Ferrari", time: "1:22:39.005", isWinner: true },
@@ -259,7 +259,7 @@ const F1_2026_CALENDAR = [
     flag: "🇧🇪",
     grandPrix: "Belgian Grand Prix 2026",
     circuit: "Circuit de Spa-Francorchamps",
-    circuitImage: "https://media.formula1.com/image/upload/f_auto/q_auto/v1677244975/content/dam/fom-website/2018-redesign-assets/Circuit%20maps%2016x9/Belgium_Circuit.png",
+    circuitImage: "https://media.formula1.com/image/upload/f_auto/q_auto:best/v1677244975/content/dam/fom-website/2018-redesign-assets/Circuit%20maps%2016x9/Belgium_Circuit.png",
     date: "17 - 19 JUL",
     localTime: "15:00 CEST",
     thaiTime: "20:00 น. (เวลาไทย)",
@@ -269,7 +269,7 @@ const F1_2026_CALENDAR = [
     laps: 44,
     lapRecord: "1:46.286 (Valtteri Bottas)",
     gallery: [
-      "https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=1200&q=80"
+      "https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=3840&q=100"
     ],
     top3: [
       { pos: "1ST", code: "ANT", driver: "Kimi Antonelli", team: "Mercedes", time: "1:25:56.300", isWinner: true },
@@ -283,7 +283,7 @@ const F1_2026_CALENDAR = [
     flag: "🇭🇺",
     grandPrix: "Hungarian Grand Prix 2026",
     circuit: "Hungaroring",
-    circuitImage: "https://media.formula1.com/image/upload/f_auto/q_auto/v1677244975/content/dam/fom-website/2018-redesign-assets/Circuit%20maps%2016x9/Hungary_Circuit.png",
+    circuitImage: "https://media.formula1.com/image/upload/f_auto/q_auto:best/v1677244975/content/dam/fom-website/2018-redesign-assets/Circuit%20maps%2016x9/Hungary_Circuit.png",
     date: "24 - 26 JUL",
     localTime: "15:00 CEST",
     thaiTime: "20:00 น. (เวลาไทย)",
@@ -293,7 +293,7 @@ const F1_2026_CALENDAR = [
     laps: 70,
     lapRecord: "1:16.627 (Lewis Hamilton)",
     gallery: [
-      "https://images.unsplash.com/photo-1552519507-da3b142c6e3d?auto=format&fit=crop&w=1200&q=80"
+      "https://images.unsplash.com/photo-1552519507-da3b142c6e3d?auto=format&fit=crop&w=3840&q=100"
     ],
     top3: [
       { pos: "1ST", code: "NOR", driver: "Lando Norris", team: "McLaren", time: "1:35:40.110", isWinner: true },
@@ -307,7 +307,7 @@ const F1_2026_CALENDAR = [
     flag: "🇳🇱",
     grandPrix: "Dutch Grand Prix 2026",
     circuit: "Circuit Zandvoort",
-    circuitImage: "https://media.formula1.com/image/upload/f_auto/q_auto/v1677244975/content/dam/fom-website/2018-redesign-assets/Circuit%20maps%2016x9/Netherlands_Circuit.png",
+    circuitImage: "https://media.formula1.com/image/upload/f_auto/q_auto:best/v1677244975/content/dam/fom-website/2018-redesign-assets/Circuit%20maps%2016x9/Netherlands_Circuit.png",
     date: "21 - 23 AUG",
     localTime: "15:00 CEST",
     thaiTime: "20:00 น. (เวลาไทย)",
@@ -317,7 +317,7 @@ const F1_2026_CALENDAR = [
     laps: 72,
     lapRecord: "1:11.097 (Lewis Hamilton)",
     gallery: [
-      "https://images.unsplash.com/photo-1580273916550-e323be2ae537?auto=format&fit=crop&w=1200&q=80"
+      "https://images.unsplash.com/photo-1580273916550-e323be2ae537?auto=format&fit=crop&w=3840&q=100"
     ],
     top3: [
       { pos: "1ST", code: "NOR", driver: "Lando Norris", team: "McLaren", time: "1:30:45.519", isWinner: true },
@@ -331,7 +331,7 @@ const F1_2026_CALENDAR = [
     flag: "🇮🇹",
     grandPrix: "Italian Grand Prix 2026",
     circuit: "Autodromo Nazionale Monza",
-    circuitImage: "https://media.formula1.com/image/upload/f_auto/q_auto/v1677244975/content/dam/fom-website/2018-redesign-assets/Circuit%20maps%2016x9/Italy_Circuit.png",
+    circuitImage: "https://media.formula1.com/image/upload/f_auto/q_auto:best/v1677244975/content/dam/fom-website/2018-redesign-assets/Circuit%20maps%2016x9/Italy_Circuit.png",
     date: "04 - 06 SEP",
     localTime: "15:00 CEST",
     thaiTime: "20:00 น. (เวลาไทย)",
@@ -342,8 +342,8 @@ const F1_2026_CALENDAR = [
     laps: 53,
     lapRecord: "1:21.046 (Rubens Barrichello)",
     gallery: [
-      "https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?auto=format&fit=crop&w=1200&q=80",
-      "https://images.unsplash.com/photo-1541348263662-e08266f92f3a?auto=format&fit=crop&w=1200&q=80"
+      "https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?auto=format&fit=crop&w=3840&q=100",
+      "https://images.unsplash.com/photo-1541348263662-e08266f92f3a?auto=format&fit=crop&w=3840&q=100"
     ],
     top3: null
   },
@@ -353,7 +353,7 @@ const F1_2026_CALENDAR = [
     flag: "🇦🇿",
     grandPrix: "Azerbaijan Grand Prix 2026",
     circuit: "Baku City Circuit",
-    circuitImage: "https://media.formula1.com/image/upload/f_auto/q_auto/v1677244975/content/dam/fom-website/2018-redesign-assets/Circuit%20maps%2016x9/Baku_Circuit.png",
+    circuitImage: "https://media.formula1.com/image/upload/f_auto/q_auto:best/v1677244975/content/dam/fom-website/2018-redesign-assets/Circuit%20maps%2016x9/Baku_Circuit.png",
     date: "18 - 20 SEP",
     localTime: "15:00 AZT",
     thaiTime: "18:00 น. (เวลาไทย)",
@@ -363,7 +363,7 @@ const F1_2026_CALENDAR = [
     laps: 51,
     lapRecord: "1:43.009 (Charles Leclerc)",
     gallery: [
-      "https://images.unsplash.com/photo-1508974239320-0a029497e820?auto=format&fit=crop&w=1200&q=80"
+      "https://images.unsplash.com/photo-1508974239320-0a029497e820?auto=format&fit=crop&w=3840&q=100"
     ],
     top3: null
   },
@@ -373,7 +373,7 @@ const F1_2026_CALENDAR = [
     flag: "🇸🇬",
     grandPrix: "Singapore Grand Prix 2026",
     circuit: "Marina Bay Street Circuit",
-    circuitImage: "https://media.formula1.com/image/upload/f_auto/q_auto/v1677244975/content/dam/fom-website/2018-redesign-assets/Circuit%20maps%2016x9/Singapore_Circuit.png",
+    circuitImage: "https://media.formula1.com/image/upload/f_auto/q_auto:best/v1677244975/content/dam/fom-website/2018-redesign-assets/Circuit%20maps%2016x9/Singapore_Circuit.png",
     date: "02 - 04 OCT",
     localTime: "20:00 SGT",
     thaiTime: "19:00 น. (เวลาไทย)",
@@ -383,7 +383,7 @@ const F1_2026_CALENDAR = [
     laps: 62,
     lapRecord: "1:35.867 (Lewis Hamilton)",
     gallery: [
-      "https://images.unsplash.com/photo-1511919884226-fd3cad34687c?auto=format&fit=crop&w=1200&q=80"
+      "https://images.unsplash.com/photo-1511919884226-fd3cad34687c?auto=format&fit=crop&w=3840&q=100"
     ],
     top3: null
   },
@@ -393,7 +393,7 @@ const F1_2026_CALENDAR = [
     flag: "🇺🇸",
     grandPrix: "United States Grand Prix 2026",
     circuit: "Circuit of The Americas",
-    circuitImage: "https://media.formula1.com/image/upload/f_auto/q_auto/v1677244975/content/dam/fom-website/2018-redesign-assets/Circuit%20maps%2016x9/USA_Circuit.png",
+    circuitImage: "https://media.formula1.com/image/upload/f_auto/q_auto:best/v1677244975/content/dam/fom-website/2018-redesign-assets/Circuit%20maps%2016x9/USA_Circuit.png",
     date: "16 - 18 OCT",
     localTime: "14:00 CDT",
     thaiTime: "02:00 น. (+1 วัน / เวลาไทย)",
@@ -403,7 +403,7 @@ const F1_2026_CALENDAR = [
     laps: 56,
     lapRecord: "1:36.169 (Charles Leclerc)",
     gallery: [
-      "https://images.unsplash.com/photo-1542282088-72c9c27ed0cd?auto=format&fit=crop&w=1200&q=80"
+      "https://images.unsplash.com/photo-1542282088-72c9c27ed0cd?auto=format&fit=crop&w=3840&q=100"
     ],
     top3: null
   },
@@ -413,7 +413,7 @@ const F1_2026_CALENDAR = [
     flag: "🇲🇽",
     grandPrix: "Mexico City Grand Prix 2026",
     circuit: "Autódromo Hermanos Rodríguez",
-    circuitImage: "https://media.formula1.com/image/upload/f_auto/q_auto/v1677244975/content/dam/fom-website/2018-redesign-assets/Circuit%20maps%2016x9/Mexico_Circuit.png",
+    circuitImage: "https://media.formula1.com/image/upload/f_auto/q_auto:best/v1677244975/content/dam/fom-website/2018-redesign-assets/Circuit%20maps%2016x9/Mexico_Circuit.png",
     date: "23 - 25 OCT",
     localTime: "14:00 CST",
     thaiTime: "03:00 น. (+1 วัน / เวลาไทย)",
@@ -423,7 +423,7 @@ const F1_2026_CALENDAR = [
     laps: 71,
     lapRecord: "1:17.774 (Valtteri Bottas)",
     gallery: [
-      "https://images.unsplash.com/photo-1552519507-da3b142c6e3d?auto=format&fit=crop&w=1200&q=80"
+      "https://images.unsplash.com/photo-1552519507-da3b142c6e3d?auto=format&fit=crop&w=3840&q=100"
     ],
     top3: null
   },
@@ -433,7 +433,7 @@ const F1_2026_CALENDAR = [
     flag: "🇧🇷",
     grandPrix: "São Paulo Grand Prix 2026",
     circuit: "Autódromo José Carlos Pace",
-    circuitImage: "https://media.formula1.com/image/upload/f_auto/q_auto/v1677244975/content/dam/fom-website/2018-redesign-assets/Circuit%20maps%2016x9/Brazil_Circuit.png",
+    circuitImage: "https://media.formula1.com/image/upload/f_auto/q_auto:best/v1677244975/content/dam/fom-website/2018-redesign-assets/Circuit%20maps%2016x9/Brazil_Circuit.png",
     date: "06 - 08 NOV",
     localTime: "14:00 BRT",
     thaiTime: "23:00 น. (เวลาไทย)",
@@ -443,7 +443,7 @@ const F1_2026_CALENDAR = [
     laps: 71,
     lapRecord: "1:10.540 (Valtteri Bottas)",
     gallery: [
-      "https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=1200&q=80"
+      "https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=3840&q=100"
     ],
     top3: null
   },
@@ -453,7 +453,7 @@ const F1_2026_CALENDAR = [
     flag: "🇺🇸",
     grandPrix: "Las Vegas Grand Prix 2026",
     circuit: "Las Vegas Strip Circuit",
-    circuitImage: "https://media.formula1.com/image/upload/f_auto/q_auto/v1677244975/content/dam/fom-website/2018-redesign-assets/Circuit%20maps%2016x9/Las_Vegas_Circuit.png",
+    circuitImage: "https://media.formula1.com/image/upload/f_auto/q_auto:best/v1677244975/content/dam/fom-website/2018-redesign-assets/Circuit%20maps%2016x9/Las_Vegas_Circuit.png",
     date: "19 - 21 NOV",
     localTime: "22:00 PST",
     thaiTime: "13:00 น. (เวลาไทย)",
@@ -463,7 +463,7 @@ const F1_2026_CALENDAR = [
     laps: 50,
     lapRecord: "1:35.490 (Oscar Piastri)",
     gallery: [
-      "https://images.unsplash.com/photo-1580273916550-e323be2ae537?auto=format&fit=crop&w=1200&q=80"
+      "https://images.unsplash.com/photo-1580273916550-e323be2ae537?auto=format&fit=crop&w=3840&q=100"
     ],
     top3: null
   },
@@ -473,7 +473,7 @@ const F1_2026_CALENDAR = [
     flag: "🇶🇦",
     grandPrix: "Qatar Grand Prix 2026",
     circuit: "Lusail International Circuit",
-    circuitImage: "https://media.formula1.com/image/upload/f_auto/q_auto/v1677244975/content/dam/fom-website/2018-redesign-assets/Circuit%20maps%2016x9/Qatar_Circuit.png",
+    circuitImage: "https://media.formula1.com/image/upload/f_auto/q_auto:best/v1677244975/content/dam/fom-website/2018-redesign-assets/Circuit%20maps%2016x9/Qatar_Circuit.png",
     date: "27 - 29 NOV",
     localTime: "20:00 AST",
     thaiTime: "00:00 น. (+1 วัน / เวลาไทย)",
@@ -483,7 +483,7 @@ const F1_2026_CALENDAR = [
     laps: 57,
     lapRecord: "1:24.319 (Max Verstappen)",
     gallery: [
-      "https://images.unsplash.com/photo-1617814076367-b759c7d7e738?auto=format&fit=crop&w=1200&q=80"
+      "https://images.unsplash.com/photo-1617814076367-b759c7d7e738?auto=format&fit=crop&w=3840&q=100"
     ],
     top3: null
   },
@@ -493,7 +493,7 @@ const F1_2026_CALENDAR = [
     flag: "🇦🇪",
     grandPrix: "Abu Dhabi Grand Prix 2026",
     circuit: "Yas Marina Circuit",
-    circuitImage: "https://media.formula1.com/image/upload/f_auto/q_auto/v1677244975/content/dam/fom-website/2018-redesign-assets/Circuit%20maps%2016x9/Abu_Dhabi_Circuit.png",
+    circuitImage: "https://media.formula1.com/image/upload/f_auto/q_auto:best/v1677244975/content/dam/fom-website/2018-redesign-assets/Circuit%20maps%2016x9/Abu_Dhabi_Circuit.png",
     date: "04 - 06 DEC",
     localTime: "17:00 GST",
     thaiTime: "20:00 น. (เวลาไทย)",
@@ -503,7 +503,7 @@ const F1_2026_CALENDAR = [
     laps: 58,
     lapRecord: "1:26.103 (Max Verstappen)",
     gallery: [
-      "https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?auto=format&fit=crop&w=1200&q=80"
+      "https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?auto=format&fit=crop&w=3840&q=100"
     ],
     top3: null
   }
@@ -563,8 +563,8 @@ const playF1EngineSound = () => {
   try {
     const AudioCtx = window.AudioContext || window.webkitAudioContext;
     if (!AudioCtx) return;
-    const ctx = new AudioCtx();
 
+    const ctx = new AudioCtx();
     const osc = ctx.createOscillator();
     const gain = ctx.createGain();
 
@@ -589,11 +589,163 @@ const playF1EngineSound = () => {
   }
 };
 
+// 🎬 F1 VIDEO INTRO COMPONENT (ตั้งค่าเสียงเริ่มต้น 50% พร้อมปุ่มเพิ่ม/ลด/ปิดเสียง)
+function F1Intro({ onComplete }) {
+  const [volume, setVolume] = useState(0.5); // ค่าเริ่มต้น 50% (0.5)
+  const [isMuted, setIsMuted] = useState(false);
+  const [isFadingOut, setIsFadingOut] = useState(false);
+  const videoRef = useRef(null);
+
+  const VIDEO_SRC = "/videos/f1-intro.mp4"; 
+
+  useEffect(() => {
+    if (videoRef.current) {
+      videoRef.current.volume = volume;
+      videoRef.current.muted = false;
+
+      videoRef.current.play().catch((err) => {
+        console.warn("Autoplay with audio blocked by browser, muting initially:", err);
+        if (videoRef.current) {
+          videoRef.current.muted = true;
+          setIsMuted(true);
+          videoRef.current.play();
+        }
+      });
+    }
+  }, []);
+
+  const handleSkip = () => {
+    setIsFadingOut(true);
+    setTimeout(() => {
+      onComplete();
+    }, 600);
+  };
+
+  const handleVolumeChange = (newVolume) => {
+    const clampedVolume = Math.min(1, Math.max(0, newVolume));
+    setVolume(clampedVolume);
+    if (videoRef.current) {
+      videoRef.current.volume = clampedVolume;
+      if (clampedVolume > 0 && isMuted) {
+        videoRef.current.muted = false;
+        setIsMuted(false);
+      } else if (clampedVolume === 0) {
+        setIsMuted(true);
+      }
+    }
+  };
+
+  const toggleMute = () => {
+    if (videoRef.current) {
+      const nextMuteState = !isMuted;
+      setIsMuted(nextMuteState);
+      videoRef.current.muted = nextMuteState;
+      if (!nextMuteState && volume === 0) {
+        handleVolumeChange(0.5);
+      }
+    }
+  };
+
+  return (
+    <div
+      className={`fixed inset-0 z-[100] bg-black overflow-hidden transition-opacity duration-700 select-none ${
+        isFadingOut ? "opacity-0 pointer-events-none" : "opacity-100"
+      }`}
+    >
+      <div className="absolute inset-0 flex items-center justify-center overflow-hidden">
+        <video
+          ref={videoRef}
+          src={VIDEO_SRC}
+          autoPlay
+          playsInline
+          controls={false}
+          onEnded={handleSkip}
+          className="w-full h-full object-cover"
+        />
+      </div>
+
+      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/40 pointer-events-none" />
+
+      {/* VOLUME CONTROL BAR (ปุ่มเพิ่ม/ลดเสียง & Mute) */}
+      <div className="absolute top-6 right-6 z-50 flex items-center gap-2 px-4 py-2 bg-black/70 backdrop-blur-md border border-white/20 rounded-full shadow-2xl">
+        <button
+          onClick={toggleMute}
+          className="text-sm hover:scale-110 transition-transform p-1"
+          title={isMuted ? "Unmute" : "Mute"}
+        >
+          {isMuted || volume === 0 ? "🔇" : volume < 0.5 ? "🔉" : "🔊"}
+        </button>
+
+        <button
+          onClick={() => handleVolumeChange(volume - 0.1)}
+          className="w-6 h-6 flex items-center justify-center bg-zinc-800 hover:bg-[#E10600] text-white rounded-full font-bold text-xs transition-colors"
+          title="ลดเสียง"
+        >
+          -
+        </button>
+
+        <input
+          type="range"
+          min="0"
+          max="1"
+          step="0.05"
+          value={isMuted ? 0 : volume}
+          onChange={(e) => handleVolumeChange(parseFloat(e.target.value))}
+          className="w-20 accent-[#E10600] cursor-pointer h-1.5 bg-zinc-700 rounded-lg appearance-none"
+        />
+
+        <button
+          onClick={() => handleVolumeChange(volume + 0.1)}
+          className="w-6 h-6 flex items-center justify-center bg-zinc-800 hover:bg-[#E10600] text-white rounded-full font-bold text-xs transition-colors"
+          title="เพิ่มเสียง"
+        >
+          +
+        </button>
+
+        <span className="font-mono text-[11px] text-zinc-300 min-w-[36px] text-right font-bold">
+          {isMuted ? "0%" : `${Math.round(volume * 100)}%`}
+        </span>
+      </div>
+
+      {/* HOVER BOTTOM TRIGGER & SKIP BUTTON */}
+      <div className="absolute bottom-0 left-0 w-full h-28 z-50 flex items-center justify-center group">
+        <div className="transform translate-y-12 group-hover:translate-y-0 opacity-0 group-hover:opacity-100 transition-all duration-300 ease-out">
+          <button
+            onClick={handleSkip}
+            className="flex items-center gap-3 px-8 py-3 bg-[#E10600] hover:bg-red-700 text-white font-mono font-bold tracking-widest text-sm rounded-full shadow-[0_0_30px_rgba(225,6,0,0.8)] border border-red-400 hover:scale-105 active:scale-95 transition-all uppercase"
+          >
+            <span>SKIP</span>
+            <span className="text-lg">⏩</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// 🏎️ MAIN APP PAGE
 export default function F1CalendarApp() {
+  const [showIntro, setShowIntro] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [activeFilter, setActiveFilter] = useState("ALL");
   const [selectedCircuit, setSelectedCircuit] = useState(null);
   const [timeLeft, setTimeLeft] = useState({ days: 8, hours: 14, mins: 22, secs: 45 });
+
+  useEffect(() => {
+    const hasSeenIntro = sessionStorage.getItem("f1_intro_seen");
+    if (!hasSeenIntro) {
+      setShowIntro(true);
+    }
+  }, []);
+
+  const handleIntroComplete = () => {
+    sessionStorage.setItem("f1_intro_seen", "true");
+    setShowIntro(false);
+  };
+
+  const handleReplayIntro = () => {
+    setShowIntro(true);
+  };
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -621,6 +773,9 @@ export default function F1CalendarApp() {
   return (
     <div className="relative min-h-screen bg-[#070709] text-white font-sans selection:bg-[#E10600] selection:text-white overflow-x-hidden">
       
+      {/* 🏁 F1 VIDEO INTRO OVERLAY */}
+      {showIntro && <F1Intro onComplete={handleIntroComplete} />}
+
       {/* BACKGROUND FX */}
       <div 
         className="fixed inset-0 z-0 opacity-20 pointer-events-none"
@@ -651,13 +806,16 @@ export default function F1CalendarApp() {
                 FIA FORMULA ONE WORLD CHAMPIONSHIP™ 2026
               </span>
 
-              <button
-                onClick={playF1EngineSound}
-                className="group relative inline-flex items-center gap-2 px-4 py-1.5 text-xs font-mono font-bold uppercase tracking-wider text-zinc-300 bg-zinc-900/80 border border-zinc-700 rounded-full hover:border-[#E10600] hover:text-white transition-all shadow-lg active:scale-95"
-              >
-                <span className="text-[#E10600] group-hover:animate-bounce">🔊</span>
-                <span>REV ENGINE (SFX)</span>
-              </button>
+              <div className="flex items-center gap-2">
+                {/* ปุ่มดูอินโทรอีกครั้ง */}
+                <button
+                  onClick={handleReplayIntro}
+                  className="group relative inline-flex items-center gap-2 px-4 py-1.5 text-xs font-mono font-bold uppercase tracking-wider text-zinc-300 bg-zinc-900/80 border border-zinc-700 rounded-full hover:border-[#E10600] hover:text-white transition-all shadow-lg active:scale-95"
+                >
+                  <span className="text-[#E10600] group-hover:rotate-180 transition-transform duration-500">🎬</span>
+                  <span>WATCH INTRO</span>
+                </button>
+              </div>
             </div>
 
             <h1 className="text-4xl sm:text-7xl font-black italic uppercase tracking-tighter bg-gradient-to-r from-white via-zinc-200 to-zinc-500 bg-clip-text text-transparent drop-shadow-2xl">
@@ -935,7 +1093,6 @@ export default function F1CalendarApp() {
             className="relative w-full max-w-4xl max-h-[90vh] overflow-y-auto bg-zinc-950 border-2 border-[#E10600] rounded-3xl p-6 sm:p-8 shadow-[0_0_50px_rgba(225,6,0,0.4)]"
             onClick={(e) => e.stopPropagation()}
           >
-            {/* CLOSE BUTTON */}
             <button
               onClick={() => setSelectedCircuit(null)}
               className="absolute top-4 right-4 sm:top-6 sm:right-6 w-10 h-10 rounded-full bg-zinc-900 hover:bg-[#E10600] text-zinc-400 hover:text-white border border-zinc-700 flex items-center justify-center font-mono font-bold transition-all shadow-lg"
@@ -943,7 +1100,6 @@ export default function F1CalendarApp() {
               ✕
             </button>
 
-            {/* MODAL HEADER */}
             <div className="flex items-center gap-3 mb-2 font-mono text-xs">
               <span className="bg-[#E10600] text-white px-3 py-1 rounded-sm font-black uppercase">
                 {selectedCircuit.round}
@@ -956,7 +1112,6 @@ export default function F1CalendarApp() {
             </h2>
             <p className="text-lg font-bold text-zinc-300 uppercase font-mono mb-6">{selectedCircuit.grandPrix}</p>
 
-            {/* CIRCUIT TELEMETRY GRID */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 font-mono mb-8">
               <div className="bg-zinc-900/90 border border-zinc-800 p-3 rounded-2xl text-center">
                 <span className="text-[10px] text-zinc-500 font-bold block">TRACK LENGTH</span>
@@ -978,7 +1133,6 @@ export default function F1CalendarApp() {
               </div>
             </div>
 
-            {/* CIRCUIT MAP DISPLAY */}
             <div className="mb-8">
               <h3 className="text-sm font-mono font-bold text-zinc-400 uppercase tracking-widest mb-3 flex items-center gap-2">
                 <span className="w-2 h-2 rounded-full bg-[#E10600]" />
@@ -993,12 +1147,11 @@ export default function F1CalendarApp() {
               </div>
             </div>
 
-            {/* CIRCUIT PHOTOS & ATMOSPHERE GALLERY */}
             {selectedCircuit.gallery && selectedCircuit.gallery.length > 0 && (
               <div>
                 <h3 className="text-sm font-mono font-bold text-zinc-400 uppercase tracking-widest mb-3 flex items-center gap-2">
                   <span className="w-2 h-2 rounded-full bg-[#E10600]" />
-                  CIRCUIT ATMOSPHERE & GALLERY
+                  CIRCUIT ATMOSPHERE & GALLERY (4K HD)
                 </h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   {selectedCircuit.gallery.map((imgUrl, idx) => (
