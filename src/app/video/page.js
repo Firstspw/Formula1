@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import Navigation from "@/components/navigation";
 import withAuth from "@/components/withAuth";
 
@@ -61,73 +62,204 @@ const F1_OFFICIAL_VIDEOS = [
 ];
 
 function VideoPage() {
+  const [selectedCategory, setSelectedCategory] = useState("ALL");
+
+  const categories = ["ALL", ...Array.from(new Set(F1_OFFICIAL_VIDEOS.map((v) => v.category)))];
+  
+  const filteredVideos = selectedCategory === "ALL" 
+    ? F1_OFFICIAL_VIDEOS 
+    : F1_OFFICIAL_VIDEOS.filter((v) => v.category === selectedCategory);
+
+  const featuredVideo = F1_OFFICIAL_VIDEOS[0];
+
   return (
-    <div className="min-h-screen bg-zinc-950 text-white font-sans selection:bg-[#E10600]">
-      <div className="w-full h-1.5 bg-[#E10600] shadow-[0_0_20px_#E10600]" />
+    <div className="relative min-h-screen bg-black text-white font-sans selection:bg-[#E10600] selection:text-white overflow-hidden">
+      {/* Background Ambient Glows */}
+      <div className="absolute top-0 right-1/4 w-[700px] h-[700px] bg-[#E10600]/15 rounded-full blur-[180px] pointer-events-none" />
+      <div className="absolute top-1/3 left-10 w-[500px] h-[500px] bg-red-600/10 rounded-full blur-[170px] pointer-events-none" />
+
+      {/* Cyber Grid Pattern Overlay */}
+      <div className="absolute inset-0 bg-[linear-gradient(to_right,#1f1f1f15_1px,transparent_1px),linear-gradient(to_bottom,#1f1f1f15_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] pointer-events-none" />
+
+      {/* Top Laser Accent */}
+      <div className="w-full h-1.5 bg-[#E10600] shadow-[0_0_30px_#E10600]" />
+
       <Navigation />
 
-      <main className="max-w-7xl mx-auto py-10 px-6">
-        <header className="mb-10">
-          <span className="text-xs font-mono font-bold text-[#E10600] tracking-widest uppercase bg-[#E10600]/10 px-3 py-1 rounded-full border border-[#E10600]/30">
-            FORMULA1.COM OFFICIAL VIDEOS
-          </span>
-          <h1 className="text-4xl sm:text-6xl font-black italic uppercase tracking-tight mt-3 mb-2">
-            LATEST <span className="text-[#E10600]">HIGHLIGHTS & CLIPS</span>
-          </h1>
-          <p className="text-zinc-400 text-sm max-w-2xl">
-            รับชมวิดีโอไฮไลท์การแข่งขันย้อนหลัง บทวิเคราะห์เจาะลึก วิทยุสื่อสารนักแข่ง และ Onboard จากสนาม F1 2026
-          </p>
+      <main className="max-w-7xl mx-auto py-10 px-4 sm:px-6 relative z-10">
+        {/* Header Section */}
+        <header className="mb-12 flex flex-col md:flex-row md:items-end justify-between border-b border-zinc-800/80 pb-8 gap-6">
+          <div>
+            <div className="inline-flex items-center gap-2 bg-[#E10600]/10 border border-[#E10600]/40 px-4 py-1.5 rounded-full backdrop-blur-md shadow-[0_0_20px_rgba(225,6,0,0.25)]">
+              <span className="w-2.5 h-2.5 rounded-full bg-[#E10600] animate-ping" />
+              <span className="text-xs font-mono font-bold text-[#E10600] tracking-widest uppercase">
+                FORMULA1.COM OFFICIAL VIDEOS
+              </span>
+            </div>
+            <h1 className="text-4xl sm:text-7xl font-black italic uppercase tracking-tighter mt-4 bg-gradient-to-r from-white via-zinc-200 to-zinc-500 bg-clip-text text-transparent">
+              LATEST <span className="text-[#E10600] drop-shadow-[0_0_30px_rgba(225,6,0,0.6)]">HIGHLIGHTS & CLIPS</span>
+            </h1>
+            <p className="text-zinc-400 text-sm max-w-2xl mt-3 leading-relaxed">
+              รับชมวิดีโอไฮไลท์การแข่งขันย้อนหลัง บทวิเคราะห์เจาะลึก วิทยุสื่อสารนักแข่ง และ Onboard จากสนาม F1 2026
+            </p>
+          </div>
+
+          {/* Quick Counter Card */}
+          <div className="bg-zinc-950/80 backdrop-blur-xl border border-zinc-800/80 p-4 rounded-2xl flex items-center gap-6 shadow-2xl self-start md:self-end">
+            <div>
+              <p className="text-[10px] font-mono uppercase text-zinc-500">Total Videos</p>
+              <p className="text-2xl font-black font-mono text-white">{F1_OFFICIAL_VIDEOS.length}</p>
+            </div>
+            <div className="w-px h-8 bg-zinc-800" />
+            <div>
+              <p className="text-[10px] font-mono uppercase text-zinc-500">Quality</p>
+              <p className="text-2xl font-black font-mono text-[#E10600]">4K / 60FPS</p>
+            </div>
+          </div>
         </header>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {F1_OFFICIAL_VIDEOS.map((vid, idx) => (
+        {/* Featured Hero Video Section */}
+        {featuredVideo && (
+          <section className="mb-14">
+            <div className="flex items-center gap-2 mb-4">
+              <span className="text-xs font-mono font-bold text-zinc-400 uppercase tracking-widest">
+                🔥 FEATURED SHOWCASE
+              </span>
+            </div>
+            <a
+              href={featuredVideo.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="group relative block w-full bg-zinc-950 border border-zinc-800 rounded-3xl overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.9)] hover:border-[#E10600]/80 transition-all duration-500"
+            >
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-0">
+                <div className="relative lg:col-span-7 h-72 sm:h-96 overflow-hidden bg-zinc-900">
+                  <img
+                    src={featuredVideo.thumbnail}
+                    alt={featuredVideo.title}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 opacity-90"
+                    onError={(e) => {
+                      e.currentTarget.src = "https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?q=80&w=1000&auto=format&fit=crop";
+                    }}
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-zinc-950/30 to-transparent lg:bg-gradient-to-r lg:from-transparent lg:to-zinc-950" />
+                  
+                  {/* Play Button Glow */}
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <div className="w-20 h-20 rounded-full bg-[#E10600] text-white flex items-center justify-center shadow-[0_0_40px_#E10600] group-hover:scale-110 transition-transform duration-300">
+                      <span className="text-2xl ml-1">▶</span>
+                    </div>
+                  </div>
+
+                  <span className="absolute bottom-4 left-4 bg-black/80 backdrop-blur-md text-white text-xs font-mono px-3 py-1 rounded-lg border border-zinc-700">
+                    {featuredVideo.duration}
+                  </span>
+                </div>
+
+                <div className="lg:col-span-5 p-8 flex flex-col justify-between bg-zinc-950/90 backdrop-blur-xl">
+                  <div>
+                    <div className="flex items-center justify-between mb-4">
+                      <span className="text-xs font-mono font-bold text-[#E10600] uppercase tracking-wider bg-[#E10600]/10 px-3 py-1 rounded-md border border-[#E10600]/30">
+                        {featuredVideo.category}
+                      </span>
+                      <span className="text-xs font-mono text-zinc-500">{featuredVideo.date}</span>
+                    </div>
+                    <h2 className="text-2xl sm:text-3xl font-black italic uppercase text-white group-hover:text-[#E10600] transition-colors leading-tight mb-4">
+                      {featuredVideo.title}
+                    </h2>
+                    <p className="text-sm text-zinc-400 font-sans leading-relaxed">
+                      {featuredVideo.description}
+                    </p>
+                  </div>
+
+                  <div className="mt-8 pt-6 border-t border-zinc-800/80 flex items-center justify-between text-xs font-mono text-zinc-400 group-hover:text-white">
+                    <span className="flex items-center gap-2">
+                      <span className="w-2 h-2 rounded-full bg-[#E10600]" /> Watch Full Video on Formula1.com
+                    </span>
+                    <span className="text-lg group-hover:translate-x-2 transition-transform">&rarr;</span>
+                  </div>
+                </div>
+              </div>
+            </a>
+          </section>
+        )}
+
+        {/* Category Filter Tabs */}
+        <div className="flex items-center gap-2 mb-8 overflow-x-auto pb-2 scrollbar-none">
+          {categories.map((cat) => (
+            <button
+              key={cat}
+              onClick={() => setSelectedCategory(cat)}
+              className={`px-4 py-2 rounded-xl text-xs font-mono font-bold uppercase transition-all whitespace-nowrap border ${
+                selectedCategory === cat
+                  ? "bg-[#E10600] text-white border-[#E10600] shadow-[0_0_20px_rgba(225,6,0,0.4)]"
+                  : "bg-zinc-900/80 text-zinc-400 border-zinc-800 hover:border-zinc-700 hover:text-white"
+              }`}
+            >
+              {cat}
+            </button>
+          ))}
+        </div>
+
+        {/* Video Grid Section */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {filteredVideos.map((vid, idx) => (
             <a
               key={idx}
               href={vid.url}
               target="_blank"
               rel="noopener noreferrer"
-              className="group bg-zinc-900/60 border border-zinc-800/80 hover:border-[#E10600]/60 rounded-2xl overflow-hidden transition-all duration-300 hover:-translate-y-1 shadow-xl flex flex-col justify-between"
+              className="group bg-zinc-950/80 border border-zinc-800/80 hover:border-[#E10600]/80 rounded-3xl overflow-hidden transition-all duration-500 hover:-translate-y-2 shadow-[0_10px_30px_rgba(0,0,0,0.6)] flex flex-col justify-between backdrop-blur-md"
             >
               <div>
-                <div className="relative h-48 w-full bg-zinc-950 overflow-hidden">
+                {/* Thumbnail Header */}
+                <div className="relative h-52 w-full bg-zinc-900 overflow-hidden">
                   <img
                     src={vid.thumbnail}
                     alt={vid.title}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 opacity-85"
+                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 opacity-85"
                     onError={(e) => {
-                      e.target.src = "https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?q=80&w=1000&auto=format&fit=crop";
+                      e.currentTarget.src = "https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?q=80&w=1000&auto=format&fit=crop";
                     }}
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-transparent to-transparent opacity-80" />
-                  <span className="absolute bottom-3 right-3 bg-black/80 text-white text-[10px] font-mono px-2 py-0.5 rounded border border-zinc-700">
+                  <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-zinc-950/20 to-transparent opacity-90" />
+                  
+                  {/* Category Badge */}
+                  <span className="absolute top-3 left-3 bg-black/70 backdrop-blur-md text-[#E10600] text-[10px] font-mono font-bold px-2.5 py-1 rounded-md border border-zinc-800 uppercase">
+                    {vid.category}
+                  </span>
+
+                  {/* Duration Tag */}
+                  <span className="absolute bottom-3 right-3 bg-black/80 backdrop-blur-md text-white text-[10px] font-mono px-2 py-0.5 rounded border border-zinc-700">
                     {vid.duration}
                   </span>
-                  <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                    <span className="w-12 h-12 rounded-full bg-[#E10600] text-white flex items-center justify-center shadow-[0_0_20px_#E10600]">
+
+                  {/* Play Overlay */}
+                  <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                    <span className="w-14 h-14 rounded-full bg-[#E10600] text-white flex items-center justify-center shadow-[0_0_30px_#E10600] group-hover:scale-110 transition-transform">
                       ▶
                     </span>
                   </div>
                 </div>
 
-                <div className="p-5">
-                  <div className="flex justify-between items-center mb-2">
-                    <span className="text-[10px] font-mono font-bold text-[#E10600] uppercase tracking-wider">
-                      {vid.category}
-                    </span>
+                {/* Content Body */}
+                <div className="p-6">
+                  <div className="flex justify-between items-center mb-3">
                     <span className="text-[10px] font-mono text-zinc-500">{vid.date}</span>
                   </div>
-                  <h2 className="text-lg font-black italic uppercase line-clamp-2 text-zinc-100 group-hover:text-[#E10600] transition-colors">
+                  <h2 className="text-lg font-black italic uppercase line-clamp-2 text-zinc-100 group-hover:text-[#E10600] transition-colors leading-snug">
                     {vid.title}
                   </h2>
-                  <p className="text-xs text-zinc-400 mt-2 line-clamp-2 font-sans">
+                  <p className="text-xs text-zinc-400 mt-2.5 line-clamp-2 font-sans leading-relaxed">
                     {vid.description}
                   </p>
                 </div>
               </div>
 
-              <div className="px-5 py-3 bg-zinc-950/70 border-t border-zinc-800/60 flex justify-between items-center text-xs font-mono text-zinc-400 group-hover:text-white">
-                <span>Watch on Formula1.com</span>
-                <span>&rarr;</span>
+              {/* Action Footer */}
+              <div className="px-6 py-4 bg-zinc-900/40 border-t border-zinc-800/80 flex justify-between items-center text-xs font-mono text-zinc-400 group-hover:text-white transition-colors">
+                <span className="font-bold">Watch on Formula1.com</span>
+                <span className="text-base group-hover:translate-x-1 transition-transform">&rarr;</span>
               </div>
             </a>
           ))}
@@ -136,4 +268,5 @@ function VideoPage() {
     </div>
   );
 }
+
 export default withAuth(VideoPage);
